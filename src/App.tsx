@@ -736,7 +736,7 @@ export default function App() {
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img 
-              src="/icon.png" 
+              src="./icon.png" 
               alt="HabitLoop Logo" 
               className="w-9 h-9 rounded-xl shadow-xs object-contain"
               referrerPolicy="no-referrer"
@@ -890,7 +890,7 @@ export default function App() {
               <div className="relative mb-5 flex justify-center items-center">
                 <div className="absolute inset-x-0 -inset-y-2 w-24 h-24 bg-indigo-100/50 rounded-full blur-xl animate-pulse" />
                 <img 
-                  src="/icon.png" 
+                  src="./icon.png" 
                   alt="HabitLoop Logo" 
                   className="w-20 h-20 rounded-2xl shadow-md border border-neutral-100 object-contain relative z-10"
                   referrerPolicy="no-referrer"
@@ -902,16 +902,6 @@ export default function App() {
               <p className="text-[11px] font-semibold text-neutral-500 mt-1.5 leading-relaxed max-w-xs">
                 Log health, fitness, mindfulness, and habits using a clean, offline-first dashboard.
               </p>
-
-              {/* iPhone Safari warning notice */}
-              <div className="mt-4 w-full bg-rose-50 border border-rose-200 rounded-2xl p-3.5 text-left">
-                <p className="text-[10px] font-black text-rose-800 leading-normal flex items-start gap-1.5">
-                  <span className="shrink-0 text-xs">⚠️</span>
-                  <span>
-                    <strong>APPLE iOS USERS:</strong> You <span className="underline">MUST</span> open this tracker in the <strong className="font-black">Safari browser</strong> to add or install it on your Home Screen!
-                  </span>
-                </p>
-              </div>
 
               <div className="bg-neutral-50 border border-neutral-150/80 rounded-2xl p-4 w-full mt-4 text-left">
                 <span className="text-[9px] font-black text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full uppercase tracking-wider mb-2.5 inline-block">
@@ -950,13 +940,16 @@ export default function App() {
                 {/* Tab Info */}
                 {splashTab === 'ios' ? (
                   <div className="space-y-2 text-[11px] text-neutral-600 leading-relaxed">
-                    <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 mb-2.5 text-rose-700 font-extrabold text-[10px] text-center leading-normal">
-                      ⚠️ CRITICAL APPLE iOS REQUIREMENT:<br />
-                      You <span className="underline font-black text-rose-800">MUST</span> use the <span className="bg-rose-100 border border-rose-200 px-1 py-0.5 rounded font-black text-rose-900">Safari browser</span> to run and install this app. Other browsers like Chrome or Firefox on iOS do NOT support adding to your Home Screen!
+                    <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 mb-2.5 text-rose-700 font-extrabold text-[10px] text-left leading-normal flex gap-1.5 items-start">
+                      <span className="shrink-0">⚠️</span>
+                      <span>
+                        <strong>CRITICAL APPLE iOS REQUIREMENT:</strong><br />
+                        You <span className="underline font-black text-rose-800">MUST</span> use the built-in <span className="bg-rose-100 border border-rose-200 px-1 py-0.5 rounded font-black text-rose-900">Safari browser</span> to run and install this app. Other browsers (Chrome, Firefox, etc.) on iOS do NOT support adding items to your Home Screen!
+                      </span>
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">1</span>
-                      <span>Open this exact screen inside your iPhone's built-in <strong>Safari Browser</strong>.</span>
+                      <span>Open this tracker dashboard inside your iPhone's built-in <strong>Safari Browser</strong>.</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">2</span>
@@ -964,18 +957,25 @@ export default function App() {
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">3</span>
-                      <span>Scroll down the options list and select <strong>"Add to Home Screen"</strong> <Plus className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" />.</span>
+                      <span>Scroll down the option sheet and select <strong>"Add to Home Screen"</strong> <Plus className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" />.</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">4</span>
-                      <span>Tap <strong>"Add"</strong> in the top-right corner to complete placing the app icon.</span>
+                      <span>Tap <strong>"Add"</strong> in the top-right corner to place it on your home screen.</span>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-2 text-[11px] text-neutral-600 leading-relaxed">
+                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 mb-2.5 text-indigo-700 font-extrabold text-[10px] text-left leading-normal flex gap-1.5 items-start">
+                      <span className="shrink-0">💡</span>
+                      <span>
+                        <strong>RECOMMENDED ANDROID METHOD:</strong><br />
+                        For the best progressive app features, open this tracker in <strong>Google Chrome</strong> or <strong>Samsung Internet</strong>.
+                      </span>
+                    </div>
                     <div className="flex items-start gap-2">
                       <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">1</span>
-                      <span>Open browser panel menu <MoreVertical className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" /> on Chrome/Edge.</span>
+                      <span>Open browser panel menu <MoreVertical className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" /> on Chrome/Edge or tap the bottom banner prompt.</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">2</span>
