@@ -37,6 +37,7 @@ export interface AppSettings {
   soundEnabled: boolean;
   hapticFeedback: boolean;
   bgTheme?: 'none' | 'light_blue' | 'light_pink';
+  pwaSplashEnabled?: boolean;
 }
 
 export type ViewType = 'today' | 'insights' | 'trends' | 'settings';

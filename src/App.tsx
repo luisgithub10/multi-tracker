@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sun, Sparkles, TrendingUp, Settings as SettingsIcon, CheckCircle2, 
-  Flame, Award, Smartphone, Github, Heart, LayoutDashboard
+  Flame, Award, Smartphone, Github, Heart, LayoutDashboard, Share, Plus, MoreVertical, X, Download
 } from 'lucide-react';
 
 import lightBlueBg from './assets/images/light_blue_bg_1779491889250.png';
@@ -110,7 +110,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   reminderTime: '21:00',
   soundEnabled: true,
   hapticFeedback: true,
-  bgTheme: 'none'
+  bgTheme: 'none',
+  pwaSplashEnabled: true
 };
 
 export default function App() {
@@ -125,6 +126,17 @@ export default function App() {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | null>(null);
+
+  const [showPwaSplash, setShowPwaSplash] = useState<boolean>(false);
+  const [splashTab, setSplashTab] = useState<'ios' | 'android'>('ios');
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      setSplashTab(isIos ? 'ios' : 'android');
+    }
+  }, []);
 
   // Navigates and updates page slide direction index
   const handleSetView = (newView: ViewType) => {
@@ -296,11 +308,39 @@ export default function App() {
         }
         setSettings(storedSettings ? JSON.parse(storedSettings) : DEFAULT_SETTINGS);
         setSubtaskCompletions(storedSubtasks ? JSON.parse(storedSubtasks) : {});
+      } finally {
+        setIsInitialLoadComplete(true);
       }
     };
 
     loadState();
   }, []);
+
+  // Check if we should prompt for active PWA installation
+  useEffect(() => {
+    if (!isInitialLoadComplete) return;
+
+    // Check if running in standalone PWA mode (already added as Shortcut onto Home Screen)
+    const isStandalone = typeof window !== 'undefined' && (
+      window.matchMedia('(display-mode: standalone)').matches || 
+      (window.navigator as any).standalone === true
+    );
+    
+    // Check if dismissed previously
+    const isDismissed = typeof window !== 'undefined' && localStorage.getItem('habitloop_pwa_splash_dismissed') === 'true';
+    
+    // Check if startup welcome is enabled in settings
+    const isEnabledInSettings = settings.pwaSplashEnabled !== false;
+
+    // Only show on first load if not standalone AND not dismissed AND enabled in settings
+    if (!isStandalone && !isDismissed && isEnabledInSettings) {
+      // Delay slightly for smooth transition on mount
+      const timer = setTimeout(() => {
+        setShowPwaSplash(true);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isInitialLoadComplete, settings.pwaSplashEnabled]);
 
   // Slide translation variants based on navigation direction
   const slideVariants = {
@@ -555,6 +595,11 @@ export default function App() {
   // Save Settings
   const handleUpdateSettings = (newSettings: Partial<AppSettings>) => {
     const updated = { ...settings, ...newSettings };
+    if (newSettings.pwaSplashEnabled === true) {
+      localStorage.removeItem('habitloop_pwa_splash_dismissed');
+    } else if (newSettings.pwaSplashEnabled === false) {
+      localStorage.setItem('habitloop_pwa_splash_dismissed', 'true');
+    }
     updateSettingsState(updated);
   };
 
@@ -687,14 +732,17 @@ export default function App() {
         onTouchEnd={handleTouchEnd}
       >
       {/* Header Bar */}
-      <header className="bg-white border-b border-neutral-100 sticky top-0 z-40 px-4 py-3 shadow-3xs">
+      <header className="bg-white border-b border-neutral-100 sticky top-0 z-40 px-4 py-2.5 shadow-3xs">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="p-2 bg-neutral-900 text-white rounded-xl shadow-xs">
-              <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-            </span>
+          <div className="flex items-center gap-2.5">
+            <img 
+              src="/icon.png" 
+              alt="HabitLoop Logo" 
+              className="w-9 h-9 rounded-xl shadow-xs object-contain"
+              referrerPolicy="no-referrer"
+            />
             <div>
-              <h1 className="text-sm font-extrabold tracking-tight text-neutral-900">HabitLoop</h1>
+              <h1 className="text-base font-black tracking-tight text-neutral-900 leading-none">HabitLoop</h1>
             </div>
           </div>
 
@@ -721,11 +769,7 @@ export default function App() {
             })}
           </nav>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full border border-emerald-100 uppercase tracking-wide">
-              Cloud Offline
-            </span>
-          </div>
+          <div className="w-9 h-9 md:hidden" /> {/* Balanced layout spacing spacer */}
         </div>
       </header>
 
@@ -784,6 +828,7 @@ export default function App() {
                 onAddHabit={handleAddHabit}
                 onNavigateToday={() => handleSetView('today')}
                 onResetAllData={handleResetAllData}
+                onShowPwaGuide={() => setShowPwaSplash(true)}
               />
             )}
           </motion.div>
@@ -816,6 +861,146 @@ export default function App() {
           );
         })}
       </div>
+
+      {/* PWA Welcome & Add-To-Home-Screen Setup Splash Screen */}
+      <AnimatePresence>
+        {showPwaSplash && (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/80 backdrop-blur-md overflow-y-auto"
+            id="pwa-splash-overlay"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 180 }}
+              className="bg-white rounded-3xl border border-neutral-100 p-6 shadow-2xl max-w-sm w-full my-auto text-center relative flex flex-col items-center"
+              id="pwa-splash-container"
+            >
+              {/* Close button */}
+              <button
+                type="button"
+                id="pwa-splash-close-btn"
+                onClick={() => setShowPwaSplash(false)}
+                className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-50 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Pulsing visual glow background for the icon */}
+              <div className="relative mb-5 flex justify-center items-center">
+                <div className="absolute inset-x-0 -inset-y-2 w-24 h-24 bg-indigo-100/50 rounded-full blur-xl animate-pulse" />
+                <img 
+                  src="/icon.png" 
+                  alt="HabitLoop Logo" 
+                  className="w-20 h-20 rounded-2xl shadow-md border border-neutral-100 object-contain relative z-10"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              {/* Title & Brand descriptor */}
+              <h2 className="text-lg font-black text-neutral-900 tracking-tight leading-tight">Welcome to HabitLoop</h2>
+              <p className="text-[11px] font-semibold text-neutral-500 mt-1.5 leading-relaxed max-w-xs">
+                Log health, fitness, mindfulness, and habits using a clean, offline-first dashboard.
+              </p>
+
+              <div className="bg-neutral-50 border border-neutral-150/80 rounded-2xl p-4 w-full mt-4 text-left">
+                <span className="text-[9px] font-black text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full uppercase tracking-wider mb-2.5 inline-block">
+                  Add To Home Screen
+                </span>
+                <p className="text-xs font-bold text-neutral-800 leading-normal mb-3">
+                  Install this tracker onto your device's home screen for full standalone full-screen view.
+                </p>
+
+                {/* Tab selector */}
+                <div className="grid grid-cols-2 gap-1 bg-neutral-150 p-1 rounded-xl mb-3 border border-neutral-200">
+                  <button
+                    type="button"
+                    onClick={() => setSplashTab('ios')}
+                    className={`py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+                      splashTab === 'ios' 
+                        ? 'bg-white text-indigo-700 shadow-3xs' 
+                        : 'text-neutral-500 hover:text-neutral-700'
+                    }`}
+                  >
+                    Apple iOS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSplashTab('android')}
+                    className={`py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+                      splashTab === 'android' 
+                        ? 'bg-white text-indigo-700 shadow-3xs' 
+                        : 'text-neutral-550 hover:text-neutral-700'
+                    }`}
+                  >
+                    Android / PC
+                  </button>
+                </div>
+
+                {/* Tab Info */}
+                {splashTab === 'ios' ? (
+                  <div className="space-y-2 text-[11px] text-neutral-600 leading-relaxed">
+                    <div className="bg-rose-50 border border-rose-100 rounded-xl p-2.5 mb-2.5 text-rose-700 font-black text-[10px] text-center leading-normal">
+                      ⚠️ APPLE iOS USERS:<br />You MUST open this app in the <span className="underline">Safari browser</span> to install it on your home screen!
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">1</span>
+                      <span>Tap the <strong>Safari Share</strong> button <Share className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" /> at the bottom.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">2</span>
+                      <span>Scroll list down and tap <strong>"Add to Home Screen"</strong> <Plus className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" />.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">3</span>
+                      <span>Tap <strong>"Add"</strong> in top corner to complete pin placement.</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2 text-[11px] text-neutral-600 leading-relaxed">
+                    <div className="flex items-start gap-2">
+                      <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">1</span>
+                      <span>Open browser panel menu <MoreVertical className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" /> on Chrome/Edge.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">2</span>
+                      <span>Tap <strong>"Install App"</strong> or <strong>"Add to Home Screen"</strong>.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">3</span>
+                      <span>Confirm permission on device popup prompt to finish.</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions Button */}
+              <div className="w-full flex flex-col gap-2 mt-5">
+                <button
+                  id="pwa-splash-continue-btn"
+                  onClick={() => {
+                    setShowPwaSplash(false);
+                  }}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-colors shadow-xs"
+                >
+                  Continue for Now
+                </button>
+                <button
+                  id="pwa-splash-dismiss-forever-btn"
+                  onClick={() => {
+                    localStorage.setItem('habitloop_pwa_splash_dismissed', 'true');
+                    setShowPwaSplash(false);
+                  }}
+                  className="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-extrabold py-2 px-4 rounded-xl text-[10px] uppercase tracking-wider cursor-pointer transition-colors border border-neutral-200 shadow-3xs"
+                >
+                  Do Not Show Anymore
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
     </>
   );

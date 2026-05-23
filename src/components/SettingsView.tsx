@@ -11,6 +11,7 @@ interface SettingsViewProps {
   onAddHabit: (habit: Omit<Habit, 'id' | 'createdAt'>) => void;
   onNavigateToday: () => void;
   onResetAllData: () => void;
+  onShowPwaGuide?: () => void;
 }
 
 const CATEGORIES = [
@@ -34,7 +35,8 @@ export default function SettingsView({
   onUpdateSettings,
   onAddHabit,
   onNavigateToday,
-  onResetAllData
+  onResetAllData,
+  onShowPwaGuide
 }: SettingsViewProps) {
   const [userName, setUserName] = useState(settings.userName);
   const [dailyGoal, setDailyGoal] = useState(settings.dailyGoal);
@@ -242,29 +244,50 @@ export default function SettingsView({
           </form>
         </div>
 
-        {/* Sound Preferences Section */}
+        {/* Sound & PWA Splash Preferences Section */}
         <div className={getPanelClass("p-5 w-full max-w-[400px] h-full flex flex-col justify-between")}>
           <div>
             <h3 className="text-sm font-bold tracking-tight text-neutral-800 flex items-center gap-2 mb-4">
-              <Volume2 className="w-4 h-4 text-indigo-700" /> Sound Preferences
+              <Volume2 className="w-4 h-4 text-indigo-700" /> App Preferences
             </h3>
 
-            <div className="py-2.5">
+            <div className="space-y-4">
               {/* Sounds */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pb-3.5 border-b border-neutral-100/60">
                 <div>
-                  <span className="text-xs font-bold text-neutral-700 block">Sound</span>
+                  <span className="text-xs font-bold text-neutral-700 block">Sound Effects</span>
+                  <span className="text-[10px] text-neutral-450 block leading-tight mt-0.5">Play audio cues on completions</span>
                 </div>
                 <button
                   id="toggle-settings-sound"
                   type="button"
                   onClick={() => onUpdateSettings({ soundEnabled: !settings.soundEnabled })}
-                  className={`w-12 h-6.5 rounded-full p-1 transition-colors cursor-pointer ${
+                  className={`w-12 h-6.5 rounded-full p-1 transition-colors cursor-pointer shrink-0 ${
                     settings.soundEnabled ? 'bg-neutral-900' : 'bg-neutral-200'
                   }`}
                 >
                   <div className={`w-4.5 h-4.5 rounded-full bg-white transition-transform ${
                     settings.soundEnabled ? 'translate-x-5.5' : 'translate-x-0'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Startup Install Welcome Splash */}
+              <div className="flex items-center justify-between pt-0.5">
+                <div>
+                  <span className="text-xs font-bold text-neutral-700 block">Startup Splash Guide</span>
+                  <span className="text-[10px] text-neutral-450 block leading-tight mt-0.5">Show install prompts on app launch</span>
+                </div>
+                <button
+                  id="toggle-settings-pwa-splash"
+                  type="button"
+                  onClick={() => onUpdateSettings({ pwaSplashEnabled: settings.pwaSplashEnabled !== false ? false : true })}
+                  className={`w-12 h-6.5 rounded-full p-1 transition-colors cursor-pointer shrink-0 ${
+                    settings.pwaSplashEnabled !== false ? 'bg-neutral-900' : 'bg-neutral-200'
+                  }`}
+                >
+                  <div className={`w-4.5 h-4.5 rounded-full bg-white transition-transform ${
+                    settings.pwaSplashEnabled !== false ? 'translate-x-5.5' : 'translate-x-0'
                   }`} />
                 </button>
               </div>
@@ -721,6 +744,20 @@ export default function SettingsView({
                   </p>
                 </div>
               </div>
+            </div>
+          )}
+          
+          {onShowPwaGuide && (
+            <div className="pt-3 border-t border-neutral-100/60">
+              <button
+                type="button"
+                id="btn-launch-pwa-guide"
+                onClick={onShowPwaGuide}
+                className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider py-2 px-3.5 rounded-xl transition-all cursor-pointer shadow-3xs hover:shadow-2xs"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                Launch Step-by-Step Setup Guide
+              </button>
             </div>
           )}
         </div>
