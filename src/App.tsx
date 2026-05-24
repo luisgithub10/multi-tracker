@@ -698,7 +698,7 @@ export default function App() {
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img 
-              src="/icon.png?v=4" 
+              src="icon.png?v=4" 
               alt="HabitLoop Logo" 
               className="w-9 h-9 rounded-xl shadow-xs object-cover shrink-0"
               referrerPolicy="no-referrer"

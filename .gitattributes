@@ -1,0 +1,9 @@
+# Force Git to treat raw assets and images as binary files to prevent corruption on commits/pushes
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.mp3 binary
+*.wav binary
