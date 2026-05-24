@@ -7,6 +7,7 @@ import {
 
 import lightBlueBg from './assets/images/light_blue_bg_1779491889250.png';
 import lightPinkBg from './assets/images/light_pink_bg_1779491909327.png';
+import habitLoopIcon from './assets/images/habit_loop_icon_1779570587726.png';
 
 import { Habit, HabitCompletion, HabitProgress, AppSettings, ViewType } from './types';
 import TodayView from './components/TodayView';
@@ -110,8 +111,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   reminderTime: '21:00',
   soundEnabled: true,
   hapticFeedback: true,
-  bgTheme: 'none',
-  pwaSplashEnabled: true
+  bgTheme: 'none'
 };
 
 export default function App() {
@@ -127,16 +127,7 @@ export default function App() {
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | null>(null);
 
-  const [showPwaSplash, setShowPwaSplash] = useState<boolean>(false);
-  const [splashTab, setSplashTab] = useState<'ios' | 'android'>('ios');
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      setSplashTab(isIos ? 'ios' : 'android');
-    }
-  }, []);
 
   // Navigates and updates page slide direction index
   const handleSetView = (newView: ViewType) => {
@@ -316,31 +307,7 @@ export default function App() {
     loadState();
   }, []);
 
-  // Check if we should prompt for active PWA installation
-  useEffect(() => {
-    if (!isInitialLoadComplete) return;
 
-    // Check if running in standalone PWA mode (already added as Shortcut onto Home Screen)
-    const isStandalone = typeof window !== 'undefined' && (
-      window.matchMedia('(display-mode: standalone)').matches || 
-      (window.navigator as any).standalone === true
-    );
-    
-    // Check if dismissed previously
-    const isDismissed = typeof window !== 'undefined' && localStorage.getItem('habitloop_pwa_splash_dismissed') === 'true';
-    
-    // Check if startup welcome is enabled in settings
-    const isEnabledInSettings = settings.pwaSplashEnabled !== false;
-
-    // Only show on first load if not standalone AND not dismissed AND enabled in settings
-    if (!isStandalone && !isDismissed && isEnabledInSettings) {
-      // Delay slightly for smooth transition on mount
-      const timer = setTimeout(() => {
-        setShowPwaSplash(true);
-      }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [isInitialLoadComplete, settings.pwaSplashEnabled]);
 
   // Slide translation variants based on navigation direction
   const slideVariants = {
@@ -595,11 +562,6 @@ export default function App() {
   // Save Settings
   const handleUpdateSettings = (newSettings: Partial<AppSettings>) => {
     const updated = { ...settings, ...newSettings };
-    if (newSettings.pwaSplashEnabled === true) {
-      localStorage.removeItem('habitloop_pwa_splash_dismissed');
-    } else if (newSettings.pwaSplashEnabled === false) {
-      localStorage.setItem('habitloop_pwa_splash_dismissed', 'true');
-    }
     updateSettingsState(updated);
   };
 
@@ -718,7 +680,7 @@ export default function App() {
       {/* Bulletproof fixed viewport background layer */}
       <div 
         className={`fixed inset-0 z-0 pointer-events-none transition-all duration-300 ${
-          settings.bgTheme && settings.bgTheme !== 'none' ? 'opacity-100' : 'bg-neutral-50'
+          settings.bgTheme && settings.bgTheme !== 'none' ? 'opacity-100' : 'bg-neutral-200'
         }`}
         style={settings.bgTheme && settings.bgTheme !== 'none' ? bgStyle : undefined}
         id="app-fixed-background"
@@ -736,7 +698,7 @@ export default function App() {
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img 
-              src="./icon.png" 
+              src={habitLoopIcon} 
               alt="HabitLoop Logo" 
               className="w-9 h-9 rounded-xl shadow-xs object-cover shrink-0"
               referrerPolicy="no-referrer"
@@ -861,142 +823,7 @@ export default function App() {
         })}
       </div>
 
-      {/* PWA Welcome & Add-To-Home-Screen Setup Splash Screen */}
-      <AnimatePresence>
-        {showPwaSplash && (
-          <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/80 backdrop-blur-md overflow-y-auto"
-            id="pwa-splash-overlay"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 180 }}
-              className="bg-white rounded-3xl border border-neutral-100 p-6 shadow-2xl max-w-sm md:max-w-3xl w-full my-auto text-center relative flex flex-col items-center"
-              id="pwa-splash-container"
-            >
-              {/* Close button */}
-              <button
-                type="button"
-                id="pwa-splash-close-btn"
-                onClick={() => setShowPwaSplash(false)}
-                className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-50 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
 
-              {/* Pulsing visual glow background for the icon */}
-              <div className="relative mb-4 flex justify-center items-center">
-                <div className="absolute inset-x-0 -inset-y-2 w-20 h-20 bg-indigo-100/50 rounded-full blur-xl animate-pulse" />
-                <img 
-                  src="./icon.png?v=3" 
-                  alt="HabitLoop Logo" 
-                  className="w-16 h-16 rounded-2xl shadow-md border border-neutral-100 object-cover shrink-0 relative z-10"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-
-              {/* Title & Brand descriptor */}
-              <h2 className="text-xl font-black text-neutral-900 tracking-tight leading-tight">Welcome to HabitLoop</h2>
-              <p className="text-[11px] font-semibold text-neutral-500 mt-1 leading-relaxed max-w-sm">
-                Log health, fitness, mindfulness, and habits using a clean, offline-first dashboard.
-              </p>
-
-              <div className="w-full mt-4 text-left">
-                <div className="flex flex-col md:flex-row gap-4.5">
-                  
-                  {/* Apple iOS Column */}
-                  <div className="flex-1 bg-neutral-50 border border-neutral-150/80 rounded-2xl p-4 flex flex-col">
-                    <span className="text-[9px] font-black text-rose-700 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider mb-2.5 inline-block self-start">
-                      Apple iOS (iPhone / iPad) Guide
-                    </span>
-                    
-                    <div className="bg-rose-100/60 border border-rose-200/80 rounded-xl p-2.5 mb-3 text-rose-800 font-extrabold text-[10px] leading-normal flex gap-1.5 items-start">
-                      <span className="shrink-0 text-xs">⚠️</span>
-                      <span>
-                        You <span className="underline font-black text-rose-900">MUST</span> use the built-in <strong className="font-black text-rose-950 bg-white/70 px-1 py-0.5 rounded border border-rose-300">Safari browser</strong> to download/add this app. iOS Chrome, Firefox, or Edge do NOT support Home Screen icons!
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 text-[11px] text-neutral-600 leading-relaxed">
-                      <div className="flex items-start gap-2">
-                        <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">1</span>
-                        <span>Open this web application inside your iPhone's built-in <strong>Safari Browser</strong>.</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">2</span>
-                        <span>Tap the <strong>Safari Share</strong> icon <Share className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" /> at the bottom action bar.</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">3</span>
-                        <span>Scroll through the sheet items and tap <strong>"Add to Home Screen"</strong> <Plus className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" />.</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">4</span>
-                        <span>Tap <strong>"Add"</strong> in the top-right corner to place it on your home screen.</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Android / PC Column */}
-                  <div className="flex-1 bg-neutral-50 border border-neutral-150/80 rounded-2xl p-4 flex flex-col">
-                    <span className="text-[9px] font-black text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full uppercase tracking-wider mb-2.5 inline-block self-start">
-                      Android / PC / Chrome Guide
-                    </span>
-
-                    <div className="bg-indigo-100/40 border border-indigo-150/70 rounded-xl p-2.5 mb-3 text-indigo-800 font-extrabold text-[10px] leading-normal flex gap-1.5 items-start">
-                      <span className="shrink-0 text-xs">💡</span>
-                      <span>
-                        For full standalone features and automatic database restoration, open this tracker in <strong>Google Chrome</strong> or <strong>Samsung Internet</strong>.
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 text-[11px] text-neutral-600 leading-relaxed">
-                      <div className="flex items-start gap-2">
-                        <span className="font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">1</span>
-                        <span>Open browser panel menu <MoreVertical className="inline-block w-3 h-3 mx-0.5 shrink-0 stroke-[2.5px]" /> on Chrome or tap the prompt banner at the bottom.</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="font-extrabold text-indigo-600 bg-indigo-100/50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">2</span>
-                        <span>Tap <strong>"Install App"</strong> or the <strong>"Add to Home Screen"</strong> menu item.</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="font-extrabold text-indigo-600 bg-indigo-100/50 border border-indigo-100 w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 mt-0.5">3</span>
-                        <span>Press the confirmation button on the popup to complete setup.</span>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              {/* Actions Button */}
-              <div className="w-full flex flex-col sm:flex-row gap-2 mt-5">
-                <button
-                  id="pwa-splash-continue-btn"
-                  onClick={() => {
-                    setShowPwaSplash(false);
-                  }}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-colors shadow-xs"
-                >
-                  Continue for Now
-                </button>
-                <button
-                  id="pwa-splash-dismiss-forever-btn"
-                  onClick={() => {
-                    handleUpdateSettings({ pwaSplashEnabled: false });
-                    setShowPwaSplash(false);
-                  }}
-                  className="flex-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-extrabold py-3 px-4 rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-colors border border-neutral-200 shadow-3xs"
-                >
-                  Do Not Show Anymore
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
     </>
   );

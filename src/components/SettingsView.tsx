@@ -249,9 +249,9 @@ export default function SettingsView({
               <Volume2 className="w-4 h-4 text-indigo-700" /> App Preferences
             </h3>
 
-            <div className="space-y-4">
+             <div className="space-y-4">
               {/* Sounds */}
-              <div className="flex items-center justify-between pb-3.5 border-b border-neutral-100/60">
+              <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-neutral-700 block">Sound Effects</span>
                   <span className="text-[10px] text-neutral-450 block leading-tight mt-0.5">Play audio cues on completions</span>
@@ -266,26 +266,6 @@ export default function SettingsView({
                 >
                   <div className={`w-4.5 h-4.5 rounded-full bg-white transition-transform ${
                     settings.soundEnabled ? 'translate-x-5.5' : 'translate-x-0'
-                  }`} />
-                </button>
-              </div>
-
-              {/* Startup Install Welcome Splash */}
-              <div className="flex items-center justify-between pt-0.5">
-                <div>
-                  <span className="text-xs font-bold text-neutral-700 block">Startup Splash Guide</span>
-                  <span className="text-[10px] text-neutral-450 block leading-tight mt-0.5">Show install prompts on app launch</span>
-                </div>
-                <button
-                  id="toggle-settings-pwa-splash"
-                  type="button"
-                  onClick={() => onUpdateSettings({ pwaSplashEnabled: settings.pwaSplashEnabled !== false ? false : true })}
-                  className={`w-12 h-6.5 rounded-full p-1 transition-colors cursor-pointer shrink-0 ${
-                    settings.pwaSplashEnabled !== false ? 'bg-neutral-900' : 'bg-neutral-200'
-                  }`}
-                >
-                  <div className={`w-4.5 h-4.5 rounded-full bg-white transition-transform ${
-                    settings.pwaSplashEnabled !== false ? 'translate-x-5.5' : 'translate-x-0'
                   }`} />
                 </button>
               </div>
